@@ -34,17 +34,32 @@ const uploadProcessingTable = (event) => {
         return;
       }
       
+      // 保存原始表头和数据
       processingTable.headers = jsonData[0];
       processingTable.rows = jsonData.slice(1);
+      
+      // 自动在表格末尾添加厂家结算列和提成列
+      processingTable.headers.push('厂家结算');
+      processingTable.headers.push('提成');
+      
+      // 为每一行添加空的厂家结算和提成值
+      processingTable.rows.forEach(row => {
+        row.push('');
+        row.push('');
+      });
+      
+      // 保存原始数据
       processingTable.originalData = workbook;
       
-      // 重置列选择
+      // 重置产品列和操作列选择
       selectedProductColumn.value = -1;
       selectedOperationColumn.value = -1;
-      selectedSettlementColumn.value = -1;
-      selectedCommissionColumn.value = -1;
       
-      // 尝试根据列标题自动选择默认值
+      // 设置厂家结算列和提成列为新添加的列
+      selectedSettlementColumn.value = processingTable.headers.length - 2; // 倒数第二列
+      selectedCommissionColumn.value = processingTable.headers.length - 1; // 最后一列
+      
+      // 尝试根据列标题自动选择产品列和操作列
       processingTable.headers.forEach((header, index) => {
         // 查找可能的产品列
         if (header === 'D' || header.includes('产品') || header.includes('商品') || header.includes('产品类别')) {
@@ -54,17 +69,9 @@ const uploadProcessingTable = (event) => {
         if (header === 'C' || header.includes('操作') || header.includes('类型') || header.includes('服务类型')) {
           selectedOperationColumn.value = index;
         }
-        // 查找可能的厂家结算列
-        if (header.includes('厂家结算') || header.includes('结算金额')) {
-          selectedSettlementColumn.value = index;
-        }
-        // 查找可能的提成列
-        if (header === 'N' || header.includes('提成') || header.includes('佣金')) {
-          selectedCommissionColumn.value = index;
-        }
       });
       
-      ElMessage.success('待处理表格上传成功');
+      ElMessage.success('待处理表格上传成功，已自动添加厂家结算列和提成列');
     } catch (error) {
       console.error('解析Excel出错:', error);
       ElMessage.error('解析Excel出错');

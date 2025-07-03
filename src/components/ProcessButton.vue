@@ -62,42 +62,13 @@ const processData = (standardData, processingData, rules) => {
     // 使用用户选择的待处理表格列索引
     const processingProductColIndex = processingData.selectedProductColumn;
     const processingOperationColIndex = processingData.selectedOperationColumn;
-    let processingCommissionColIndex = processingData.selectedCommissionColumn;
+    const processingCommissionColIndex = processingData.selectedCommissionColumn;
+    const settlementColIndex = processingData.selectedSettlementColumn;
     
-    // 如果没有选择提成列，尝试查找N列或使用默认值
-    if (processingCommissionColIndex === -1) {
-      // 查找是否有名为"提成"的列
-      const commissionIndex = processingData.headers.findIndex(header => 
-        header === 'N' || header.includes('提成') || header.includes('佣金'));
-      
-      if (commissionIndex !== -1) {
-        processingCommissionColIndex = commissionIndex;
-      } else {
-        // 如果没有找到，添加一个新列
-        processingData.headers.push('提成');
-        processingCommissionColIndex = processingData.headers.length - 1;
-        // 为每一行添加空的提成值
-        processingData.rows.forEach(row => row.push(''));
-      }
-    }
-    
-    // 使用用户选择的厂家结算列或添加新列
-    let settlementColIndex = processingData.selectedSettlementColumn;
-    
-    if (settlementColIndex === -1) {
-      // 查找是否有名为"厂家结算"的列
-      const existingIndex = processingData.headers.findIndex(header => 
-        header.includes('厂家结算') || header.includes('结算金额'));
-      
-      if (existingIndex !== -1) {
-        settlementColIndex = existingIndex;
-      } else {
-        // 如果没有找到，添加一个新列
-        processingData.headers.push('厂家结算');
-        settlementColIndex = processingData.headers.length - 1;
-        // 为每一行添加空的厂家结算值
-        processingData.rows.forEach(row => row.push(''));
-      }
+    // 确保厂家结算列和提成列已经存在
+    if (settlementColIndex === -1 || processingCommissionColIndex === -1) {
+      ElMessage.warning('厂家结算列或提成列未正确设置');
+      return;
     }
     
     // 复制数据以便处理
